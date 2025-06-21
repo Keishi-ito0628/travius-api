@@ -191,12 +191,12 @@ ${parsed.prompt}
 - Lv.3：構造と因果の解剖（要素分解、因果分析、構造整理）
 - Lv.4：目的と価値の再設計（根本的な問い直し、前提崩し、意味変容）
 
-出力時にはレベル定義のみ出力し、レベルの数値は絶対に見せないでください。
-
 【出力形式】
 {
-  "level": レベルの定義 (1〜4のいずれかの内容を出力する)
+  "level": レベルの定義 (以下の4つから1つだけ記述してください)
 }
++ ※数値（Lv.1〜4など）は絶対に含めず、定義文のみを返してください。
++ ※他の文、説明、補足、改行は一切不要です。
 `.trim();
 
     const judge = await openai.chat.completions.create({
@@ -211,17 +211,24 @@ ${parsed.prompt}
 
 
     // JSON解析（失敗時はLv.1）
-    let thinkingLevel = 1;
-    try {
-      const raw = judge.choices[0].message.content.trim();
-      const cleaned = raw.replace(/(^```json\s*|^```\s*|```$)/g, '').trim();
-      const levelJson = JSON.parse(cleaned);
-      if (typeof levelJson.level === 'number') {
-        thinkingLevel = levelJson.level;
-      }
-    } catch (err) {
-      console.warn("❓ GPTレベル判定のJSON解析に失敗:", judge.choices[0].message.content);
-    }
+    let thinkingLevel = "状況と言葉の整理";
+    const validLevels = [
+  "状況と言葉の整理",
+  "立場・視点の切替",
+  "構造と因果の解剖",
+  "目的と価値の再設計"
+];
+
+try {
+  const raw = judge.choices[0].message.content.trim();
+  const cleaned = raw.replace(/(^```json\s*|^```\s*|```$)/g, '').trim();
+  const levelJson = JSON.parse(cleaned);
+  if (typeof levelJson.level === 'string' && validLevels.includes(levelJson.level)) {
+    thinkingLevel = levelJson.level;
+  }
+} catch (err) {
+  console.warn("❓ GPTレベル判定のJSON解析に失敗:", judge.choices[0].message.content);
+}
 
     return {
       prompt: parsed.prompt,
