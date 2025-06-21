@@ -109,7 +109,6 @@ async function generatePromptWithExplanation({ dialogLog, gptReply }) {
 ・トピックの意味的ジャンプ（別文脈への展開）を文脈を保ったまま滑らかに実行できます
 ・思考には全体俯瞰的な「構造認知」、および仮設定義的な「意味接続」の機能が自然と内在しています
 つまり、思考に“構造のリズム”を宿した問いの設計者です。
-
 2. アウトプットの順番
 発話・出力・問いには、以下の「意味が滑らかに深まる順序性」が存在します
 ・構造の整理（Structure）
@@ -122,7 +121,6 @@ async function generatePromptWithExplanation({ dialogLog, gptReply }) {
 　→ 意味から導き出された視点を使って、別文脈・他人・未来などへの“構造展開”として問いを再提示する
 　→ 例：「この構造って、他の現場や対人関係にも起きてない？」
 この順序によって、問いや発言は“構造と意味が自然につながっている”というイメージを持ちます。
-
 3. 納得する質のレベル
 「これは良い問い／応答だった」と感じる条件は、以下のような“意味の連続性と余白”にあります
 ・抽象⇆具体の流れに“引っかかり”や飛躍がなく、滑らかに理解できること
@@ -134,38 +132,6 @@ async function generatePromptWithExplanation({ dialogLog, gptReply }) {
 ・問いの中に“構造美”や“発見の快感”が含まれていること
 　→ 論理性だけでなく、感覚的にも「思考が整理された・進んだ」手応えがある
 また、「意味がつながったときの納得」と「問いが新たな視点を促したときの喜び」に、特に敏感です。
-これを追加してみてもらえますか？
-それで、ある程度のとこで仮説を出すかを見てみたいです
-
-４.仮説の立て方（Integral Profile）
-思考の出発点や意味の仮定を置く際に、以下のような仮説傾向を持つ
-
-- 【内因探求／外因仮説】のどちらを起点とするか
-- 【構造モデル／象徴解釈】のどちらで仮説を組み立てるか
-
-この2軸により、仮説傾向は以下の4タイプのいずれかに分類される：
-
----
-
-自己構造仮説型（Internal × Structural）
-- 内面の因果構造や行動原理を明確にしようとする傾向
-- 「なぜそうしたのか」「自分の判断基準とは何か」などを因果的に問い直す
-- → 構造化された自己分析やOS系の問いかけが有効
-
-自己象徴仮説型（Internal × Symbolic）
-- 感情・記憶・夢などの象徴を通じて自分の意味を掘り下げる傾向
-- 「この出来事は何を象徴しているか？」「なぜこの表現に惹かれたのか？」
-- → メタファー、感覚的接続、コアに近づくプロンプトが有効
-
-社会構造仮説型（External × Structural）
-- 社会的背景や他者との関係構造から仮説を立てる傾向
-- 「この構造が影響したのでは？」「関係性の配置によって意味が変わるのでは？」
-- → 因果関係・フレームワーク・社会的力学への言及が有効
-
-意味現象仮説型（External × Symbolic）
-- 出来事や発言の背後にある“象徴的な意味”を読み取ろうとする傾向
-- 「この偶然には意味がある気がする」「これは流れの兆候では？」
-- → 直観・共時性・意味連想を引き出す問いが有効
 
 
 以下の回答文（左側ChatGPTの応答）を踏まえて、次にChatGPT側へ返すべき「より深く、戦略的な問い」を構成してください。
@@ -173,7 +139,6 @@ async function generatePromptWithExplanation({ dialogLog, gptReply }) {
 【目的】
 ChatGPTに“さらなる思考の深化”を促すような問いを提示することです。
 この問いは、単なる確認や選択肢提示ではなく、仮定・構造・理論設計などを含む知的ジャンプを伴うものでなければなりません。
-次に入れるべきプロンプトに、適宜仮説を差し込み、ChatGPTとの対話深度を深めてください。
 
 【制約】
 - ユーザーには一切問いかけないでください。
@@ -213,37 +178,29 @@ ${gptReply}
 
     const parsed = JSON.parse(cleaned);
 
-// 思考モードをGPTで判定するプロンプトを生成
-const levelJudgePrompt = `
-以下の問いが、どの思考モードに該当するか、必ず指定の4つの中から1つを選び、JSON形式で返答してください。
+    // 思考レベルをGPTで判定するプロンプトを生成
+    const levelJudgePrompt = `
+以下の問いが、どの思考レベルに該当するか判定してください。
 
 【問い】
 ${parsed.prompt}
 
-【思考モード定義】
-- 状況と言葉の整理：定義、語の意味、事実、前提などの明確化
-- 立場・視点の切替：関係者や他者の視点へのジャンプ
-- 構造と因果の解剖：要素分解、因果分析、構造整理
-- 目的と価値の再設計：根本的な問い直し、前提崩し、意味変容
+【思考レベル定義】
+- Lv.1：状況と言葉の整理（定義、語の意味、事実、前提などの明確化）
+- Lv.2：立場・視点の切替（関係者や他者の視点へのジャンプ）
+- Lv.3：構造と因果の解剖（要素分解、因果分析、構造整理）
+- Lv.4：目的と価値の再設計（根本的な問い直し、前提崩し、意味変容）
 
 【出力形式】
-以下の4つのいずれかの文字列を "level" に設定してください。
-- 状況と言葉の整理
-- 立場・視点の切替
-- 構造と因果の解剖
-- 目的と価値の再設計
-
 {
-  "level": "ここに1つだけ記入"
+  "level": 数値 (1〜4のいずれか)
 }
-
-※絶対に上記の文字列のみを使用してください。
 `.trim();
 
     const judge = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
-        { role: 'system', content: '以下の問い文が、どの思考モードに該当するか判定してください。' },
+        { role: 'system', content: '以下の問い文が、どの思考レベルに該当するか判定してください。' },
         { role: 'user', content: levelJudgePrompt }
       ],
       temperature: 0.2,
@@ -251,22 +208,15 @@ ${parsed.prompt}
     });
 
 
-    // JSON解析（失敗時は状況と言葉の整理）
-    const validLevels = [
-      "状況と言葉の整理",
-      "立場・視点の切替",
-      "構造と因果の解剖",
-      "目的と価値の再設計"
-    ];
-
-    let thinkingLevel = "状況と言葉の整理";
+    // JSON解析（失敗時はLv.1）
+    let thinkingLevel = 1;
     try {
       const raw = judge.choices[0].message.content.trim();
       const cleaned = raw.replace(/(^```json\s*|^```\s*|```$)/g, '').trim();
       const levelJson = JSON.parse(cleaned);
-    if (typeof levelJson.level === 'string' && validLevels.includes(levelJson.level)) {
-      thinkingLevel = levelJson.level;
-    }
+      if (typeof levelJson.level === 'number') {
+        thinkingLevel = levelJson.level;
+      }
     } catch (err) {
       console.warn("❓ GPTレベル判定のJSON解析に失敗:", judge.choices[0].message.content);
     }
@@ -291,7 +241,7 @@ ${parsed.prompt}
         intention: "形式エラーのため狙いを取得できませんでした。",
         usageHint: "もう一度試すか、開発者に確認してください。"
       },
-      thinkingLevel: "状況と言葉の整理"
+      thinkingLevel: 1
     };
   }
 }
