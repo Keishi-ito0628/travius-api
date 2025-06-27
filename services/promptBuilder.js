@@ -7,26 +7,43 @@ const openai = new OpenAI({
 /**
  * 会話履歴を要約する関数
  */
-async function summarizeConversation(history) {
-  const messages = history.map(entry => ({
-    role: entry.role === 'user' ? 'user' : 'assistant',
-    content: entry.text
-  }));
+ async function summarizeConversation(history) {
+   try {
+     console.log('🧪 [summarizeConversation] 受信件数:', history.length);
+     if (history.length > 0) {
+       console.log('📝 最初の発言:', history[0]);
+     }
 
-  messages.push({
-    role: 'system',
-    content: '上記の会話の要点を簡潔にまとめてください。'
-  });
+     const messages = history.map(entry => ({
+       role: entry.role === 'user' ? 'user' : 'assistant',
+       content: entry.text
+     }));
 
-  const chat = await openai.chat.completions.create({
-    model: 'gpt-4o',
-    messages,
-    temperature: 0.7,
-    max_tokens: 300
-  });
+     messages.push({
+       role: 'system',
+       content: '上記の会話の要点を簡潔にまとめてください。'
+     });
 
-  return chat.choices[0].message.content.trim();
-}
+     console.log('📤 送信メッセージ数（含system）:', messages.length);
+     console.log('📤 プロンプト冒頭（先頭500字）:', messages.map(m => m.content).join('\n').slice(0, 500));
+
+     const chat = await openai.chat.completions.create({
+       model: 'gpt-4o',
+       messages,
+       temperature: 0.7,
+       max_tokens: 300
+     });
+
+     const summary = chat.choices[0].message.content.trim();
+     console.log('📥 要約結果（先頭300字）:', summary.slice(0, 300));
+
+     return summary;
+
+   } catch (err) {
+     console.error('❌ [summarizeConversation] エラー:', err);
+     throw err;
+   }
+ }
 
 /**
  * 対話ログ＋直近GPT応答＋（optional）思考モードに基づく次プロンプト生成
