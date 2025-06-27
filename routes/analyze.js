@@ -19,16 +19,19 @@ router.post('/', async (req, res) => {
       ? dialogLog
       : dialogLog.split('\n').map(line => line.trim()).filter(Boolean);
 
-    const result = await generatePromptWithExplanation(
-      console.log("🚀 /analyze API起動: mode =", selectedMode);
-      console.log("📄 dialogLog.length:", dialogLog?.length || 0);
-      console.log("📎 lastReply:", gptReply.slice(0, 100));
+      console.log("🧠 generatePromptWithExplanation 呼び出し開始");
+      console.log("📝 dialogLog:", dialogLines.slice(0, 2)); // 一部だけ
+      console.log("📨 gptReply:", gptReply.slice(0, 100));  // 先頭だけ
+      console.log("🧭 selectedMode:", selectedMode);
 
-      {
+    const result = await generatePromptWithExplanation({
       dialogLog: dialogLines,
       gptReply,
       selectedMode  // 🆕 ここで渡す
     });
+
+    console.log("✅ generatePromptWithExplanation 結果:", result);
+
 
     res.json({ result });
   } catch (err) {
