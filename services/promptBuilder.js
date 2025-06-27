@@ -66,7 +66,8 @@ async function generatePromptWithExplanation({ dialogLog, gptReply, selectedMode
     ${thinkingModeDescriptions[selectedMode]}
     このモードに従い、次にChatGPTに返すべき深く構造的な問いを1つ構成してください。
     `
-
+    : "";  // ← fallbackも入れておくと安全！
+    
   const systemMessage = `
   あなたは、以下の高度な構造的思考を行うAIアドバイザーです。
 
