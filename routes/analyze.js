@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { generatePromptWithExplanation } = require('../services/promptBuilder');
+const {
+  generatePromptWithExplanation
+} = require('../services/promptBuilder');
 
 router.post('/', async (req, res) => {
   console.log("✅ /analyze endpoint hit");
