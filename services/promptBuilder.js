@@ -49,6 +49,10 @@ const openai = new OpenAI({
  * 対話ログ＋直近GPT応答＋（optional）思考モードに基づく次プロンプト生成
  */
 async function generatePromptWithExplanation({ dialogLog, gptReply, selectedMode }) {
+  console.log("🚀 [generatePromptWithExplanation] 開始");
+  console.log("🧾 dialogLog（先頭2件）:", dialogLog.slice(0, 2));
+  console.log("📌 gptReply（先頭100字）:", gptReply?.slice(0, 100));
+  console.log("🎯 selectedMode:", selectedMode);
   const dialogText = dialogLog.map((line, idx) => `Q${idx + 1}: ${line}`).join('\n');
 
   // 🎯 selectedModeに応じて systemPrompt を分岐
@@ -67,7 +71,7 @@ async function generatePromptWithExplanation({ dialogLog, gptReply, selectedMode
     このモードに従い、次にChatGPTに返すべき深く構造的な問いを1つ構成してください。
     `
     : "";  // ← fallbackも入れておくと安全！
-    
+
   const systemMessage = `
   あなたは、以下の高度な構造的思考を行うAIアドバイザーです。
 
