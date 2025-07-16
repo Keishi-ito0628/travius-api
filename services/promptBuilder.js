@@ -151,7 +151,7 @@ async function generatePromptWithExplanation({ dialogLog, gptReply, selectedMode
 - ChatGPTに返す1つの問いのみを出力してください。
 
 【出力形式】
-以下の形式で**JSONとしてのみ出力**してください。
+以下の形式で**JSONとしてのみ出力**してください。また、直前のChatGPTが使用した言語を使って出力してください。
 {
   "prompt": "（あなたが構成したChatGPTへの問いをここに1文で記述）"
 }
