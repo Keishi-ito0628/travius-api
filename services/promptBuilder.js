@@ -179,6 +179,7 @@ ${gptReply}
   try {
     const cleaned = rawText.replace(/```(json)?\s*|\s*```/g, '');
     const parsed = JSON.parse(cleaned);
+    const totalTokens = chat.usage?.total_tokens || 0;
 
     let thinkingLevel = Number(selectedMode) || 1;
 
@@ -190,7 +191,9 @@ ${gptReply}
         intention: "ユーザーの思考を特定の方向に深めることを意図しています。",
         usageHint: "モードに沿った問いとして、丁寧に提示してください。"
       },
-      thinkingLevel
+      thinkingLevel,
+      tokenUsage: totalTokens
+
     };
   } catch (e) {
     console.error("⚠️ JSONパースエラー:", rawText);
@@ -202,7 +205,8 @@ ${gptReply}
         intention: "形式エラーのため狙いを取得できませんでした。",
         usageHint: "もう一度試すか、開発者に確認してください。"
       },
-      thinkingLevel: Number(selectedMode) || 1
+      thinkingLevel: Number(selectedMode) || 1,
+      tokenUsage: 0
     };
   }
 }

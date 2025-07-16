@@ -8,7 +8,7 @@ router.post('/', async (req, res) => {
   console.log("✅ /analyze endpoint hit");
 
   try {
-    const { dialogLog, gptReply, selectedMode } = req.body;  // 🆕 selectedMode を追加で受け取る
+    const { dialogLog, gptReply, selectedMode } = req.body;
 
     if (!dialogLog || !gptReply) {
       return res.status(400).json({ error: 'Missing dialogLog or gptReply in request body' });
@@ -27,13 +27,16 @@ router.post('/', async (req, res) => {
     const result = await generatePromptWithExplanation({
       dialogLog: dialogLines,
       gptReply,
-      selectedMode  // 🆕 ここで渡す
+      selectedMode
     });
 
     console.log("✅ generatePromptWithExplanation 結果:", result);
 
+    res.json({
+      result,
+      tokenUsage: result.tokenUsage || 0   // ← ここを追加！
+    });
 
-    res.json({ result });
   } catch (err) {
     console.error('❌ Analyze error:', err.message);
     res.status(500).json({ error: 'Internal server error' });
