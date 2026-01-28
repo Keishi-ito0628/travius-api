@@ -166,7 +166,10 @@ async function generatePromptWithExplanation({ dialogLog, gptReply, selectedMode
   【出力形式】
   以下の形式で**JSONとしてのみ出力**してください。また、**直前のChatGPTが使用した言語（日本語、英語など）を検出し、その言語で出力してください。混在している場合は、最も多く使われている言語に従ってください。**
 
-  ```json
+  ```js
+    【出力形式】
+    以下の形式でJSONとしてのみ出力してください。
+
   {
     "prompt": "（あなたが構成したChatGPTへの問いをここに1文で記述）"
   }
