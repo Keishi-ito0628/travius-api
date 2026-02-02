@@ -5,7 +5,10 @@ const { OpenAI } = require('openai');
  */
 function createOpenAIClient(apiKey) {
   if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length < 20) {
-    throw new Error('API key is missing or invalid');
+    const err = new Error('API key is missing or invalid');
+    err.code = 'ORG_API_KEY_NOT_REGISTERED';
+    err.status = 403;
+    throw err;
   }
   return new OpenAI({ apiKey: apiKey.trim() });
 }
@@ -13,59 +16,57 @@ function createOpenAIClient(apiKey) {
 /**
  * 会話履歴を要約する関数
  */
- async function summarizeConversation(history, apiKey) {
-   try {
-     console.log('🧪 [summarizeConversation] 受信件数:', history.length);
-     if (history.length > 0) {
-       console.log('📝 最初の発言:', history[0]);
-     }
+async function summarizeConversation(history, apiKey) {
+  try {
+    console.log('🧪 [summarizeConversation] 受信件数:', history.length);
+    if (history.length > 0) {
+      console.log('📝 最初の発言:', history[0]);
+    }
 
-     const openai = createOpenAIClient(apiKey);
+    const openai = createOpenAIClient(apiKey);
 
-     const messages = history.map(entry => ({
-       role: entry.role === 'user' ? 'user' : 'assistant',
-       content: entry.text
-     }));
+    const messages = history.map(entry => ({
+      role: entry.role === 'user' ? 'user' : 'assistant',
+      content: entry.text
+    }));
 
-     messages.push({
-       role: 'system',
-       content: '上記の会話の要点を簡潔にまとめてください。'
-     });
+    messages.push({
+      role: 'system',
+      content: '上記の会話の要点を簡潔にまとめてください。'
+    });
 
-     console.log('📤 送信メッセージ数（含system）:', messages.length);
-     console.log('📤 プロンプト冒頭（先頭500字）:', messages.map(m => m.content).join('\n').slice(0, 500));
+    console.log('📤 送信メッセージ数（含system）:', messages.length);
 
-     const chat = await openai.chat.completions.create({
-       model: 'gpt-4o',
-       messages,
-       temperature: 0.7,
-       max_tokens: 300
-     });
+    const chat = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages,
+      temperature: 0.7,
+      max_tokens: 300
+    });
 
-     const summary = chat.choices[0].message.content.trim();
-     console.log('📥 要約結果（先頭300字）:', summary.slice(0, 300));
+    const summary = chat.choices?.[0]?.message?.content?.trim() || '';
+    console.log('📥 要約結果（先頭300字）:', summary.slice(0, 300));
 
-     return summary;
+    return summary;
 
-   } catch (err) {
-     console.error('❌ [summarizeConversation] エラー:', err);
-     throw err;
-   }
- }
+  } catch (err) {
+    console.error('❌ [summarizeConversation] エラー:', err);
+    throw err;
+  }
+}
 
 /**
  * 対話ログ＋直近GPT応答＋（optional）思考モードに基づく次プロンプト生成
  */
-async function generatePromptWithExplanation({ dialogLog, gptReply, selectedMode }) {
+async function generatePromptWithExplanation({ dialogLog, gptReply, selectedMode, apiKey }) {
   console.log("🚀 [generatePromptWithExplanation] 開始");
-  console.log("🧾 dialogLog（先頭2件）:", dialogLog.slice(0, 2));
-  console.log("📌 gptReply（先頭100字）:", gptReply?.slice(0, 100));
+  console.log("🧾 dialogLog（先頭2件）:", dialogLog?.slice?.(0, 2));
+  console.log("📌 gptReply（先頭100字）:", String(gptReply || '').slice(0, 100));
   console.log("🎯 selectedMode:", selectedMode);
-  console.log("🔑 apiKey:", apiKey ? apiKey.slice(0, 7) + '...' : 'none');
 
   const openai = createOpenAIClient(apiKey);
 
-  const dialogText = dialogLog.map((line, idx) => `Q${idx + 1}: ${line}`).join('\n');
+  const dialogText = (dialogLog || []).map((line, idx) => `Q${idx + 1}: ${line}`).join('\n');
 
   // 🎯 selectedModeに応じて systemPrompt を分岐
   const thinkingModeDescriptions = {
@@ -187,8 +188,10 @@ ${gptReply}
     max_tokens: 600
   });
 
-  const rawText = chat.choices[0].message.content.trim();
-  console.log("🔍 GPT rawText:", rawText);
+  const rawText = chat.choices?.[0]?.message?.content?.trim() || '';
+  if (process.env.DEBUG_GPT === '1') {
+    console.log("🔍 GPT rawText:", rawText);
+  }
 
   try {
     const cleaned = rawText.replace(/```(json)?\s*|\s*```/g, '');

@@ -6,6 +6,21 @@ const defaultOptions = {
   max_tokens: 1000
 };
 
+function createOrgKeyError(message) {
+  const err = new Error(message);
+  err.code = 'ORG_API_KEY_NOT_REGISTERED'; // analyze側で403にする用
+  err.status = 403;
+  return err;
+}
+
+function createOpenAIError(message, detail) {
+  const err = new Error(message);
+  err.code = 'OPENAI_API_ERROR';
+  err.status = 502; // upstream error
+  err.detail = detail;
+  return err;
+}
+
 /**
  * OpenAI(Chat Completions) 呼び出し
  * @param {Array} messages - OpenAI形式のmessages配列
@@ -13,12 +28,9 @@ const defaultOptions = {
  * @param {Object} options - model / temperature / max_tokens の上書き
  */
 async function callGPT(messages, apiKey, options = {}) {
-
   if (!apiKey) {
     throw new Error('❌ OpenAI API key is not provided for this organization');
   }
-
-  console.log('[API KEY]', apiKey.slice(0, 7) + '...');
 
   const { model, temperature, max_tokens } = {
     ...defaultOptions,
@@ -42,16 +54,21 @@ async function callGPT(messages, apiKey, options = {}) {
       }
     );
 
-    console.log('[GPT Response Raw]', JSON.stringify(response.data, null, 2));
+    // ★本番で raw 全ログは重いので必要なら env で制御
+    if (process.env.DEBUG_GPT === '1') {
+      console.log('[GPT Response Raw]', JSON.stringify(response.data, null, 2));
+    }
 
-    return response.data.choices[0].message.content.trim();
+    const content = response?.data?.choices?.[0]?.message?.content;
+    return (content ?? '').trim();
 
   } catch (error) {
-    console.error(
-      '[GPT呼び出し失敗]',
-      error.response?.data || error.message
-    );
-    throw new Error('GPT呼び出しに失敗しました');
+    const detail = error.response?.data || error.message;
+
+    console.error('[GPT呼び出し失敗]', detail);
+
+    // OpenAI側のエラー内容を握りつぶさず “detail” に保持（レスポンスには出さない運用推奨）
+    throw createOpenAIError('GPT呼び出しに失敗しました', detail);
   }
 }
 
