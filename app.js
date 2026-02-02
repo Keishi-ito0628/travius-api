@@ -36,5 +36,5 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Travius API running at http://localhost:${PORT}`);
-  console.log(`🔑 OPENAI_API_KEY = ${process.env.OPENAI_API_KEY?.slice(0, 10)}...`);
+  console.log(`🔑 OPENAI_API_KEY = ${process.env.OPENAI_API_KEY ? 'OK' : 'NG'}`);
 });
