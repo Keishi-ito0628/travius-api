@@ -3,41 +3,61 @@ const router = express.Router();
 const { generatePromptWithExplanation } = require('../services/promptBuilder');
 
 // ✅ ここはあなたの既存DB接続に合わせて読み替え
-// 例）mysql2/promise の pool を export している想定
-const pool = require('../db');
 
 async function getOrgApiKey(orgId) {
-  const [rows] = await pool.query(
-    `
-    SELECT
-      org_openai_api_key_enc AS api_key_enc
-    FROM M_org
-    WHERE org_record_ID = ?
-    LIMIT 1
-    `,
-    [orgId]
-  );
+  const url = process.env.ORG_KEY_API_URL;
+  const token = process.env.INTERNAL_API_TOKEN;
 
-  if (!rows || rows.length === 0) {
-    const err = new Error('Organization not found');
-    err.code = 'ORG_NOT_FOUND';
-    err.status = 404;
+  if (!url) {
+    const err = new Error("ORG_KEY_API_URL is missing");
+    err.code = "CONFIG_MISSING_ORG_KEY_API_URL";
+    err.status = 500;
+    throw err;
+  }
+  if (!token) {
+    const err = new Error("INTERNAL_API_TOKEN is missing");
+    err.code = "CONFIG_MISSING_INTERNAL_API_TOKEN";
+    err.status = 500;
     throw err;
   }
 
-  const apiKeyEnc = rows[0].api_key_enc;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-Internal-Token": token,
+    },
+    body: new URLSearchParams({ orgId: String(orgId) }),
+  });
 
-  if (!apiKeyEnc || typeof apiKeyEnc !== 'string' || apiKeyEnc.trim().length < 20) {
-    const err = new Error('OpenAI API key is not registered for this organization');
-    err.code = 'ORG_API_KEY_NOT_REGISTERED';
-    err.status = 403;
+  const data = await res.json().catch(() => ({}));
+
+  // HTTP失敗
+  if (!res.ok) {
+    const err = new Error(data.error || data.code || "ORG_KEY_API_ERROR");
+    err.code = data.code || "ORG_KEY_API_ERROR";
+    err.status = res.status;
     throw err;
   }
 
-  // ★当面：enc列を「平文 or 復号済みキー」として扱う
-  // ★暗号化しているならここで復号する（この関数だけ差し替えればOK）
-  return apiKeyEnc.trim();
+  // HTTPは200でも、アプリとして失敗
+  if (data.ok === false) {
+    const err = new Error(data.error || data.code || "ORG_KEY_API_ERROR");
+    err.code = data.code || "ORG_KEY_API_ERROR";
+    err.status = 400;
+    throw err;
+  }
+
+  if (!data.apiKey) {
+    const err = new Error("API key not returned");
+    err.code = "ORG_KEY_API_EMPTY";
+    err.status = 500;
+    throw err;
+  }
+
+  return data.apiKey;
 }
+
 
 router.post('/', async (req, res) => {
   console.log("✅ /analyze endpoint hit");
