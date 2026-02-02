@@ -4,7 +4,7 @@ const { generatePromptWithExplanation } = require('../services/promptBuilder');
 
 // ✅ ここはあなたの既存DB接続に合わせて読み替え
 // 例）mysql2/promise の pool を export している想定
-const { pool } = require('../db'); // ←パスは環境に合わせて調整
+const pool = require('../db');
 
 async function getOrgApiKey(orgId) {
   const [rows] = await pool.query(
