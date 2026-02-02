@@ -41,6 +41,7 @@ async function getOrgApiKey(orgId) {
 
 router.post('/', async (req, res) => {
   console.log("✅ /analyze endpoint hit");
+  console.log("🏢 orgId:", orgId);
 
   try {
     const { orgId, dialogLog, gptReply, selectedMode } = req.body;
@@ -127,6 +128,5 @@ router.post('/', async (req, res) => {
     });
   }
 });
-console.log("🏢 orgId:", orgId);
 
 module.exports = router;
